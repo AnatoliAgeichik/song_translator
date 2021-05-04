@@ -1,10 +1,14 @@
-from django.contrib import admin
-from django.conf.urls import url, include
-from rest_framework.routers import DefaultRouter
-from .views import TrackViewSet, SingerViewSet
+from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
+
+from .views import TrackList, TrackDetail, SingerList, SingerDetail
 
 
-router = DefaultRouter()
-router.register(r'tracks', TrackViewSet, basename='Track')
-router.register(r'singer', SingerViewSet, basename='Singer')
-urlpatterns = router.urls
+urlpatterns = [
+    path('tracks/', TrackList.as_view()),
+    path('tracks/<int:pk>/', TrackDetail.as_view()),
+    path('singers/', SingerList.as_view()),
+    path('singers/<int:pk>/', SingerDetail.as_view()),
+]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
