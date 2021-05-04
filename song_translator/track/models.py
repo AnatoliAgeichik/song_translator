@@ -14,6 +14,7 @@ class Track(models.Model):
     translate_text = models.TextField(blank=True)
     original_language = models.CharField(max_length=2)
     singer = models.ManyToManyField(Singer)
+    owner = models.ForeignKey('auth.User', related_name='tracks', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.name
