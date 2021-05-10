@@ -50,10 +50,18 @@ class Singer(models.Model):
 class Track(models.Model):
     name = models.CharField(max_length=64)
     text = models.TextField()
-    translate_text = models.TextField(blank=True)
     original_language = models.CharField(max_length=2)
     singer = models.ManyToManyField(Singer)
     owner = models.ForeignKey('track.TranslatorUser', related_name='tracks', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.name
+
+
+class Translate(models.Model):
+    track_id = models.ForeignKey('Track', related_name='translate_track', on_delete=models.CASCADE)
+    text = models.TextField()
+    language = models.CharField(max_length=2)
+
+    def __str__(self):
+        return f"{self.track_id}: {self.language}"

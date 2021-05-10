@@ -2,8 +2,8 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from google_trans_new import google_translator
 
-from .models import Track, Singer
-from .serializers import SingerSerializer, TrackSerializer
+from .models import Track, Singer, Translate
+from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
 from .permisisions import IsOwnerOrReadOnly
 
 
@@ -19,14 +19,25 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
 
-class TrackTranslate(generics.RetrieveUpdateDestroyAPIView):
-
-    queryset = Track.objects.all()
-    serializer_class = TrackSerializer
+class TrackTranslate(generics.ListCreateAPIView):
+    queryset = Translate.objects.all()
+    serializer_class = TranslateSerializer
 
     def get(self, request, pk, lang):
-        translator = google_translator()
-        return Response(translator.translate(self.get_object().text, lang_tgt=lang))
+        translate = Translate.objects.filter(track_id=pk, language=lang)
+        if not translate:
+            translator = google_translator()
+            track = Track.objects.get(id=pk)
+            track_serializer = TrackSerializer(track)
+            Translate.objects.create(track_id=track, language=lang,
+                                     text=translator.translate(track_serializer.data['text'],
+                                                                    lang_tgt=lang,
+                                                                    lang_src=track_serializer.data[
+                                                                        'original_language']))
+            translate = Translate.objects.filter(track_id=pk, language=lang)
+        serializer = TranslateSerializer(translate.get())
+        data = serializer.data['text']
+        return Response(data)
 
 
 class SingerList(generics.ListCreateAPIView):

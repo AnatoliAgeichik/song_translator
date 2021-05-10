@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Singer, Track, TranslatorUser
+from .models import Singer, Track, TranslatorUser, Translate
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,4 +21,11 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ('id', 'name', 'text', 'translate_text', 'original_language', 'singer')
+        fields = ('id', 'name', 'text', 'original_language', 'singer')
+
+
+class TranslateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Translate
+        fields = ('id', 'track_id', 'text', 'language')
+
