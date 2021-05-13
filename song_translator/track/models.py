@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 
+from .utils import LANG_CHOICES
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
@@ -50,7 +52,7 @@ class Singer(models.Model):
 class Track(models.Model):
     name = models.CharField(max_length=64)
     text = models.TextField()
-    original_language = models.CharField(max_length=2)
+    original_language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
     singer = models.ManyToManyField(Singer)
     owner = models.ForeignKey('track.TranslatorUser', related_name='tracks', on_delete=models.CASCADE, default=1)
 
@@ -61,7 +63,7 @@ class Track(models.Model):
 class Translate(models.Model):
     track_id = models.ForeignKey('Track', related_name='translate_track', on_delete=models.CASCADE)
     text = models.TextField()
-    language = models.CharField(max_length=2)
+    language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
 
     def __str__(self):
         return f"{self.track_id}: {self.language}"
