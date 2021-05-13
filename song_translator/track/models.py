@@ -60,7 +60,7 @@ class Track(models.Model):
         return self.name
 
 
-class Translate(models.Model):
+class Translation(models.Model):
     track_id = models.ForeignKey('Track', related_name='translate_track', on_delete=models.CASCADE)
     text = models.TextField()
     language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")

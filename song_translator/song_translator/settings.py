@@ -99,7 +99,7 @@ WSGI_APPLICATION = 'song_translator.wsgi.application'
 DATABASES = {
  'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'translatorr',
+        'NAME': 'translator',
         'USER': 'myuser',
         'PASSWORD': 'password',
         'HOST': 'localhost',

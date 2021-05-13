@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import Singer, Track, TranslatorUser, Translate
+from .models import Singer, Track, TranslatorUser, Translation
 
 
 admin.site.register(Singer)
 admin.site.register(Track)
 admin.site.register(TranslatorUser)
-admin.site.register(Translate)
+admin.site.register(Translation)

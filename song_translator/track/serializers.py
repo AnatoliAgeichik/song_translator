@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from enumchoicefield import ChoiceEnum, EnumChoiceField
 
-from .models import Singer, Track, TranslatorUser, Translate
+from .models import Singer, Track, TranslatorUser, Translation
 from .utils import LANG_CHOICES
 
 
@@ -43,5 +42,5 @@ class TranslateSerializer(serializers.ModelSerializer):
     language = ChoicesField(choices=LANG_CHOICES)
 
     class Meta:
-        model = Translate
+        model = Translation
         fields = ('id', 'track_id', 'text', 'language')
