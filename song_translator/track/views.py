@@ -32,8 +32,15 @@ def translation_list(request, pk):
 
     elif request.method == 'POST':
         translation_data = JSONParser().parse(request)
+        if translation_data["auto_translate"]:
+            translator = google_translator()
+            track = Track.objects.get(id=pk)
+            track_serializer = TrackSerializer(track)
+            translation_data["text"] = translator.translate(track_serializer.data['text'],
+                                                                     lang_tgt=translation_data["language"],
+                                                                     lang_src=track_serializer.data[
+                                                                         'original_language'])
         serializer = TranslateSerializer(data=translation_data)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -46,20 +53,9 @@ def translation_list(request, pk):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def track_translate(request, pk, lang):
+def translate_detail(request, pk, transl_id):
     try:
-        translate = Translation.objects.filter(track_id=pk, language=lang)
-        if not translate:
-            translator = google_translator()
-            track = Track.objects.get(id=pk)
-            track_serializer = TrackSerializer(track)
-            Translation.objects.create(track_id=track, language=lang,
-                                       text=translator.translate(track_serializer.data['text'],
-                                                               lang_tgt=lang,
-                                                               lang_src=track_serializer.data[
-                                                                   'original_language']))
-            translate = Translation.objects.filter(track_id=pk, language=lang)
-        translate = translate.get()
+        translate = Translation.objects.filter(track_id=pk, id=transl_id).get()
     except Translation.DoesNotExist:
         return Response({'The translate does not exist'}, status=status.HTTP_404_NOT_FOUND)
 

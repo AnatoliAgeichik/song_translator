@@ -64,6 +64,7 @@ class Translation(models.Model):
     track_id = models.ForeignKey('Track', related_name='translate_track', on_delete=models.CASCADE)
     text = models.TextField()
     language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
+    auto_translate = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.track_id}: {self.language}"
