@@ -1,6 +1,5 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveUpdateAPIView
 from google_trans_new import google_translator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
@@ -9,10 +8,10 @@ from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
+from django.core.exceptions import ObjectDoesNotExist
 
-from .models import Track, Singer, Translation,User
-from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, RegistrationSerializer, LoginSerializer\
-                         ,UserSerializer
+from .models import Track, Singer, Translation, User
+from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
 from .permisisions import IsOwnerOrReadOnly
 
 
@@ -100,20 +99,13 @@ class SingerDetail(generics.RetrieveUpdateDestroyAPIView):
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
-        try:
-            data = JSONParser().parse(request)
-            user = User.objects.create_user(**data)
-
-            token = Token.objects.create(user=user)
-
-            return JsonResponse({'token': str(token)}, status=status.HTTP_201_CREATED)
-
-        except Exception as exception:
-            return JsonResponse(
-                {'error': str(exception)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+        data = JSONParser().parse(request)
+        if not all(['email' in data, 'password' in data]):
+            return JsonResponse({'error': 'password or email fields are not filled'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.create_user(**data)
+        token = Token.objects.create(user=user)
+        return JsonResponse({'token': str(token)}, status=status.HTTP_201_CREATED)
     return JsonResponse({'error': 'No data'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
@@ -125,28 +117,15 @@ def sign_in(request):
         try:
             user = authenticate(request, email=data['email'], password=data['password'])
         except KeyError:
-            return JsonResponse(
-                {'error': 'Could not login. Email or password is absent!'}
-            )
+            return JsonResponse({'error': 'Could not login. Email or password is absent!'})
         if user is None:
-
             return JsonResponse(
-                {'error': 'Could not login. Incorrect email or password!'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        else:
-
-            try:
-                token = Token.objects.get(user=user)
-            except:
-                token = Token.objects.create(user=user)
-
-            return JsonResponse(
-                {
-                    'token': str(token)
-                },
-                status=status.HTTP_200_OK
-            )
+                {'error': 'Could not login. Incorrect email or password!'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = Token.objects.get(user=user)
+        except ObjectDoesNotExist:
+            token = Token.objects.create(user=user)
+        return JsonResponse(
+            {'token': str(token)}, status=status.HTTP_200_OK)
     return Response({'error': 'No data'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
