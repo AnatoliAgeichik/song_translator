@@ -5,14 +5,15 @@ from google_trans_new import google_translator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.parsers import JSONParser
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from rest_framework.authtoken.models import Token
 
 from .models import Track, Singer, Translation,User
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, RegistrationSerializer, LoginSerializer\
                          ,UserSerializer
 from .permisisions import IsOwnerOrReadOnly
-from .renderers import UserJSONRenderer
 
 
 class TrackList(generics.ListCreateAPIView):
@@ -54,7 +55,7 @@ def translation_list(request, pk):
 
     elif request.method == 'DELETE':
         count = Translation.objects.filter(track_id=pk).delete()
-        return Response({'message': '{} translations were deleted successfully!'.format(count[0])},
+        return Response({'message': f'{count[0]} translations were deleted successfully!'},
                             status=status.HTTP_204_NO_CONTENT)
 
 
@@ -96,51 +97,56 @@ class SingerDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
 
-class RegistrationAPIView(APIView):
-    permission_classes = (AllowAny,)
-    serializer_class = RegistrationSerializer
-    renderer_classes = (UserJSONRenderer,)
+@csrf_exempt
+def signup(request):
+    if request.method == 'POST':
+        try:
+            data = JSONParser().parse(request)
+            user = User.objects.create_user(**data)
 
-    def post(self, request):
-        user = request.data.get('user', {})
+            token = Token.objects.create(user=user)
 
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+            return JsonResponse({'token': str(token)}, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as exception:
+            return JsonResponse(
+                {'error': str(exception)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-
-class LoginAPIView(APIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
-    serializer_class = LoginSerializer
-
-    def post(self, request):
-        user = request.data.get('user', {})
-        serializer = LoginSerializer(data=user)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    return JsonResponse({'error': 'No data'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
-    serializer_class = UserSerializer
+@csrf_exempt
+def sign_in(request):
 
-    def retrieve(self, request, *args, **kwargs):
-        serializer = self.serializer_class(request.user)
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        try:
+            user = authenticate(request, email=data['email'], password=data['password'])
+        except KeyError:
+            return JsonResponse(
+                {'error': 'Could not login. Email or password is absent!'}
+            )
+        if user is None:
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return JsonResponse(
+                {'error': 'Could not login. Incorrect email or password!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    def update(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
+        else:
 
+            try:
+                token = Token.objects.get(user=user)
+            except:
+                token = Token.objects.create(user=user)
 
-        serializer = self.serializer_class(
-            request.user, data=serializer_data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+            return JsonResponse(
+                {
+                    'token': str(token)
+                },
+                status=status.HTTP_200_OK
+            )
+    return Response({'error': 'No data'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
