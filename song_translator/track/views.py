@@ -1,13 +1,18 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveUpdateAPIView
 from google_trans_new import google_translator
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.parsers import JSONParser
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .models import Track, Singer, Translation
-from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
+from .models import Track, Singer, Translation,User
+from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, RegistrationSerializer, LoginSerializer\
+                         ,UserSerializer
 from .permisisions import IsOwnerOrReadOnly
+from .renderers import UserJSONRenderer
 
 
 class TrackList(generics.ListCreateAPIView):
@@ -32,6 +37,7 @@ def translation_list(request, pk):
 
     elif request.method == 'POST':
         translation_data = JSONParser().parse(request)
+        print(translation_data["auto_translate"])
         if translation_data["auto_translate"]:
             translator = google_translator()
             track = Track.objects.get(id=pk)
@@ -53,6 +59,7 @@ def translation_list(request, pk):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly])
 def translate_detail(request, pk, transl_id):
     try:
         translate = Translation.objects.filter(track_id=pk, id=transl_id).get()
@@ -87,3 +94,53 @@ class SingerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Singer.objects.all()
     serializer_class = SingerSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+
+class RegistrationAPIView(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = RegistrationSerializer
+    renderer_classes = (UserJSONRenderer,)
+
+    def post(self, request):
+        user = request.data.get('user', {})
+
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class LoginAPIView(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        user = request.data.get('user', {})
+        serializer = LoginSerializer(data=user)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = UserSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        serializer = self.serializer_class(request.user)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        serializer_data = request.data.get('user', {})
+
+
+        serializer = self.serializer_class(
+            request.user, data=serializer_data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
