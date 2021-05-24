@@ -31,10 +31,12 @@ class ChoicesField(serializers.Field):
 
 
 class TrackSerializer(serializers.ModelSerializer):
-    singer = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Singer.objects.all())
+    singer = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Singer.objects.all()
+    )
     original_language = ChoicesField(choices=LANG_CHOICES)
-
 
     class Meta:
         model = Track
