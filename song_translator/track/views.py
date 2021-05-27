@@ -31,13 +31,11 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
 def translation_list(request, pk):
     if request.method == 'GET':
         translations = Translation.objects.filter(track_id=pk)
-
         serializer = TranslateSerializer(translations, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
         translation_data = JSONParser().parse(request)
-        print(translation_data["auto_translate"])
         if translation_data["auto_translate"]:
             translator = google_translator()
             track = Track.objects.get(id=pk)
@@ -93,7 +91,7 @@ class SingerList(generics.ListCreateAPIView):
 class SingerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Singer.objects.all()
     serializer_class = SingerSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 @csrf_exempt
@@ -128,4 +126,3 @@ def sign_in(request):
         return JsonResponse(
             {'token': str(token)}, status=status.HTTP_200_OK)
     return Response({'error': 'No data'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
