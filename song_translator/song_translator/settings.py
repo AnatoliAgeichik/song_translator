@@ -39,23 +39,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_auth',
-    'django.contrib.sites',
-    'allauth',
-    'allauth.account',
 
     'track'
 ]
 
-AUTH_USER_MODEL = 'track.TranslatorUser'
+AUTH_USER_MODEL = 'track.User'
 
 
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_CONFIRM_EMAIL_ON_GET = False
-REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'track.serializers.UserSerializer',
+REST_FRAMEWORK = {
+
+'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
 }
 
 SITE_ID = 1

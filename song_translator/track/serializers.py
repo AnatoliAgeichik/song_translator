@@ -1,13 +1,14 @@
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 
-from .models import Singer, Track, TranslatorUser, Translation
+from .models import Singer, Track, User, Translation
 from .utils import LANG_CHOICES
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = TranslatorUser
+        model = User
         fields = ['id', 'email', 'first_name', 'last_name', 'spouse_name', 'date_of_birth']
 
 
@@ -30,7 +31,11 @@ class ChoicesField(serializers.Field):
 
 
 class TrackSerializer(serializers.ModelSerializer):
-    singer = serializers.StringRelatedField(many=True)
+    singer = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Singer.objects.all()
+    )
     original_language = ChoicesField(choices=LANG_CHOICES)
 
     class Meta:
