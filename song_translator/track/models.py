@@ -54,14 +54,14 @@ class Singer(models.Model):
 
 
 class Track(models.Model):
-    name = models.CharField(max_length=64)
+    track_name = models.CharField(max_length=64)
     text = models.TextField()
     original_language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
     singer = models.ManyToManyField(Singer)
     owner = models.ForeignKey('track.User', related_name='tracks', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
-        return self.name
+        return self.track_name
 
 
 class Translation(models.Model):
