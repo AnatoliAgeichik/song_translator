@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from google_trans_new import google_translator
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.contrib.auth import authenticate
@@ -9,13 +9,16 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.views import APIView
 
 from .models import Track, Singer, Translation, User
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
+from .service import PaginationSingers, PaginationTracks, PaginationTranslation
 from .permisisions import IsOwnerOrReadOnly
 
 
 class TrackList(generics.ListCreateAPIView):
+    pagination_class = PaginationTracks
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
@@ -27,33 +30,34 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
 
-@api_view(['GET', 'POST', 'DELETE'])
-def translation_list(request, pk):
-    if request.method == 'GET':
-        translations = Translation.objects.filter(track_id=pk)
-        serializer = TranslateSerializer(translations, many=True)
-        return Response(serializer.data)
+class TranslationList(APIView):
+    pagination_class = PaginationTranslation
 
-    elif request.method == 'POST':
+    def get(self, request, pk):
+        translations = Translation.objects.filter(track_id=pk)
+        paginator = PaginationTranslation()
+        return paginator.generate_response(translations, TranslateSerializer, request)
+
+    def post(self, request, pk):
         translation_data = JSONParser().parse(request)
         if translation_data["auto_translate"]:
             translator = google_translator()
             track = Track.objects.get(id=pk)
             track_serializer = TrackSerializer(track)
             translation_data["text"] = translator.translate(track_serializer.data['text'],
-                                                                     lang_tgt=translation_data["language"],
-                                                                     lang_src=track_serializer.data[
-                                                                         'original_language'])
+                                                            lang_tgt=translation_data["language"],
+                                                            lang_src=track_serializer.data[
+                                                                'original_language'])
         serializer = TranslateSerializer(data=translation_data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == 'DELETE':
+    def delete(self, requet, pk):
         count = Translation.objects.filter(track_id=pk).delete()
         return Response({'message': f'{count[0]} translations were deleted successfully!'},
-                            status=status.HTTP_204_NO_CONTENT)
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -83,6 +87,7 @@ def translate_detail(request, pk, transl_id):
 
 
 class SingerList(generics.ListCreateAPIView):
+    pagination_class = PaginationSingers
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Singer.objects.all()
     serializer_class = SingerSerializer
@@ -109,7 +114,6 @@ def signup(request):
 
 @csrf_exempt
 def sign_in(request):
-
     if request.method == 'POST':
         data = JSONParser().parse(request)
         try:
