@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from google_trans_new import google_translator
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.contrib.auth import authenticate
