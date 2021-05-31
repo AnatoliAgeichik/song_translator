@@ -40,7 +40,7 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ('id', 'name', 'text', 'original_language', 'singer')
+        fields = ('id', 'track_name', 'text', 'original_language', 'singer')
 
 
 class TranslateSerializer(serializers.ModelSerializer):

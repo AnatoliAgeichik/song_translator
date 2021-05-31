@@ -1,3 +1,5 @@
+import random
+
 from model_utils import Choices
 
 LANG_CHOICES = Choices(
@@ -105,3 +107,40 @@ LANG_CHOICES = Choices(
     ('yo', 'yoruba'),
     ('zu', 'zulu'),
 )
+
+LocaleFaker = (
+    ('bg', 'bulgarian'),
+    ('cs', 'czech'),
+    ('da', 'danish'),
+    ('en', 'english'),
+    ('fi', 'finnish'),
+    ('fr', 'french'),
+    ('de', 'german'),
+    ('el', 'greek'),
+    ('hi', 'hindi'),
+    ('it', 'italian'),
+    ('ja', 'japanese'),
+    ('lv', 'latvian'),
+    ('lt', 'lithuanian'),
+    ('ru', 'russian'),
+    ('sk', 'slovak'),
+    ('sl', 'slovenian'),
+    ('so', 'somali'),
+    ('es', 'spanish'),
+    ('sw', 'swahili'),
+    ('sv', 'swedish'),
+    ('uk', 'ukrainian'),
+
+)
+
+_rand_seed = 123
+
+
+def get_random_lang_for_factory(new_value=True):
+    global _rand_seed
+    if new_value:
+        _rand_seed = random.randint(0, 1_000)
+    random.seed(_rand_seed)
+
+    return LocaleFaker[random.randint(0, len(LocaleFaker))][0]
+
