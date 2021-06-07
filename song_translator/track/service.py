@@ -15,7 +15,7 @@ class PaginationTracks(PageNumberPagination):
 
 
 class PaginationTranslation(PageNumberPagination):
-    page_size = 10
+    page_size = 2
 
     def generate_response(self, query_set, serializer_obj, request):
         try:
