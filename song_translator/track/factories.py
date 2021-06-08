@@ -1,6 +1,6 @@
-import factory
+import factory.fuzzy
 
-from .models import Singer, Track, Translation
+from .models import Singer, Track, Translation, Comment
 from .utils import get_random_lang_for_factory
 
 
@@ -39,3 +39,11 @@ class TranslationFactory(factory.django.DjangoModelFactory):
     text = factory.Faker("text", locale=get_random_lang_for_factory(new_value=True))
     language = get_random_lang_for_factory(new_value=False)
     auto_translate = False
+
+
+class CommentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Comment
+    track_id = factory.SubFactory(TrackFactory)
+    message = factory.Faker("text")
+    mark = factory.fuzzy.FuzzyInteger(1, 5)

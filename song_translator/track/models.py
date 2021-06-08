@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 from .utils import LANG_CHOICES
@@ -38,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
 
@@ -72,3 +74,13 @@ class Translation(models.Model):
 
     def __str__(self):
         return f"{self.track_id}: {self.language}"
+
+
+class Comment(models.Model):
+    track_id = models.ForeignKey('Track', related_name='comment_track', on_delete=models.CASCADE)
+    message = models.TextField()
+    mark = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    owner = models.ForeignKey('track.User', related_name='comment_owner', on_delete=models.CASCADE, default=1)
+
+    def __str__(self):
+        return f"{self.track_id}: {self.message[:10]}"

@@ -11,8 +11,8 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 
-from .models import Track, Singer, Translation, User
-from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
+from .models import Track, Singer, Translation, User, Comment
+from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
 from .service import PaginationSingers, PaginationTracks, PaginationTranslation
 from .permisisions import IsOwnerOrReadOnly
 
@@ -28,6 +28,21 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+
+class CommentList(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def list(self, request, pk):
+        queryset = Comment.objects.filter(track_id=pk)
+        serializer = CommentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
 
 class TranslationList(APIView):
