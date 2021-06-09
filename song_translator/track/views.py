@@ -10,6 +10,8 @@ from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter, OrderingFilter
+
 
 from .models import Track, Singer, Translation, User
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
@@ -22,21 +24,32 @@ class TrackList(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ('track_name', 'original_language', 'singer__name')
 
 
 class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class TranslationList(APIView):
     pagination_class = PaginationTranslation
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ('language',)
+    ordering_fields = ('language',)
+
+    def filter_queryset(self, queryset):
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        return queryset
 
     def get(self, request, pk):
         translations = Translation.objects.filter(track_id=pk)
         paginator = PaginationTranslation()
-        return paginator.generate_response(translations, TranslateSerializer, request)
+        return paginator.generate_response(self.filter_queryset(translations), TranslateSerializer, request)
 
     def post(self, request, pk):
         translation_data = JSONParser().parse(request)
@@ -91,6 +104,8 @@ class SingerList(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Singer.objects.all()
     serializer_class = SingerSerializer
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ('name',)
 
 
 class SingerDetail(generics.RetrieveUpdateDestroyAPIView):
