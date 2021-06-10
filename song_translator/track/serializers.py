@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 
-from .models import Singer, Track, User, Translation
+from .models import Singer, Track, User, Translation, Comment
 from .utils import LANG_CHOICES
 
 
@@ -49,3 +49,9 @@ class TranslateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Translation
         fields = ('id', 'track_id', 'text', 'language')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('id', 'track_id', 'message', 'mark')

@@ -13,8 +13,8 @@ from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 
-from .models import Track, Singer, Translation, User
-from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer
+from .models import Track, Singer, Translation, User, Comment
+from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
 from .service import PaginationSingers, PaginationTracks, PaginationTranslation
 from .permisisions import IsOwnerOrReadOnly
 
@@ -32,6 +32,21 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Track.objects.all()
     serializer_class = TrackSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+class CommentList(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def list(self, request, pk):
+        queryset = Comment.objects.filter(track_id=pk)
+        serializer = CommentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
 
 class TranslationList(APIView):
