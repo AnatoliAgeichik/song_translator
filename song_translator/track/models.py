@@ -80,7 +80,7 @@ class Comment(models.Model):
     track_id = models.ForeignKey('Track', related_name='comment_track', on_delete=models.CASCADE)
     message = models.TextField()
     mark = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    owner = models.ForeignKey('track.User', related_name='comment_owner', on_delete=models.CASCADE, default=1)
+    owner = models.ForeignKey('track.User', related_name='comment_owner', null=True, on_delete=models.SET_NULL, default=1)
 
     def __str__(self):
         return f"{self.track_id}: {self.message[:10]}"
