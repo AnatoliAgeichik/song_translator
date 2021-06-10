@@ -1,0 +1,23 @@
+version: "3.3"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    env_file:
+      - ./config/.env.dev
+
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "poetry run python3 song_translator/manage.py migrate &&
+                      poetry run python3 song_translator/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
