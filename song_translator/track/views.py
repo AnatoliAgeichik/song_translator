@@ -11,6 +11,7 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.core.signals import request_finished
 
 from .models import Track, Singer, Translation, User, Comment
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
@@ -83,7 +84,7 @@ class TranslationList(APIView):
                                                                 lang_tgt=translation_data["language"],
                                                                 lang_src=track_serializer.data[
                                                                     'original_language'])
-        ldclient_close()
+        request_finished(ldclient_close())
         serializer = TranslateSerializer(data=translation_data)
         if serializer.is_valid():
             serializer.save()
