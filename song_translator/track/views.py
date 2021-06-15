@@ -84,7 +84,6 @@ class TranslationList(APIView):
                                                                 lang_tgt=translation_data["language"],
                                                                 lang_src=track_serializer.data[
                                                                     'original_language'])
-        request_finished(ldclient_close())
         serializer = TranslateSerializer(data=translation_data)
         if serializer.is_valid():
             serializer.save()

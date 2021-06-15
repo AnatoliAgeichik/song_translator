@@ -2,6 +2,7 @@ import ldclient
 from ldclient.config import Config
 from dotenv import load_dotenv
 import os
+import signal
 
 load_dotenv()
 
@@ -23,5 +24,8 @@ def get_auto_translate_flag():
     return ldclient.get().variation("auto-translate", get_test_user(), False)
 
 
-def ldclient_close():
+def ldclient_close(*args):
     ldclient.get().close()
+
+
+signal.signal(signal.SIGINT, ldclient_close)
