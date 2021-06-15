@@ -14,7 +14,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Track, Singer, Translation, User, Comment
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
-from .service import PaginationSingers, PaginationTracks, PaginationTranslation
+from .service import PaginationSingers, PaginationTracks, PaginationTranslation, PaginationComments
 from .permisisions import IsOwnerOrReadOnly
 from .feature_flag import get_auto_translate_flag, ldclient_close
 
@@ -35,13 +35,19 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CommentList(generics.ListCreateAPIView):
+    pagination_class = PaginationComments
+    permissions_class = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ('message', 'mark')
 
     def list(self, request, pk):
         queryset = Comment.objects.filter(track_id=pk)
-        serializer = CommentSerializer(queryset, many=True)
-        return Response(serializer.data)
+        res = self.filter_queryset(queryset)
+        serializer = CommentSerializer(res, many=True)
+        page = self.paginate_queryset(serializer.data)
+        return self.get_paginated_response(page)
 
 
 class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
