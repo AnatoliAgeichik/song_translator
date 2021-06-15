@@ -12,11 +12,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-
 from .models import Track, Singer, Translation, User, Comment
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
 from .service import PaginationSingers, PaginationTracks, PaginationTranslation
 from .permisisions import IsOwnerOrReadOnly
+from .feature_flag import get_auto_translate_flag, ldclient_close
 
 
 class TrackList(generics.ListCreateAPIView):
@@ -68,14 +68,16 @@ class TranslationList(APIView):
 
     def post(self, request, pk):
         translation_data = JSONParser().parse(request)
-        if translation_data["auto_translate"]:
-            translator = google_translator()
-            track = Track.objects.get(id=pk)
-            track_serializer = TrackSerializer(track)
-            translation_data["text"] = translator.translate(track_serializer.data['text'],
-                                                            lang_tgt=translation_data["language"],
-                                                            lang_src=track_serializer.data[
-                                                                'original_language'])
+        if get_auto_translate_flag():
+            if translation_data["auto_translate"]:
+                translator = google_translator()
+                track = Track.objects.get(id=pk)
+                track_serializer = TrackSerializer(track)
+                translation_data["text"] = translator.translate(track_serializer.data['text'],
+                                                                lang_tgt=translation_data["language"],
+                                                                lang_src=track_serializer.data[
+                                                                    'original_language'])
+        ldclient_close()
         serializer = TranslateSerializer(data=translation_data)
         if serializer.is_valid():
             serializer.save()
