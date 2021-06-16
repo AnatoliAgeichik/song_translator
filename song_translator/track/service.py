@@ -14,6 +14,10 @@ class PaginationTracks(PageNumberPagination):
     max_page_size = 100
 
 
+class PaginationComments(PageNumberPagination):
+    page_size = 2
+
+
 class PaginationTranslation(PageNumberPagination):
     page_size = 2
 

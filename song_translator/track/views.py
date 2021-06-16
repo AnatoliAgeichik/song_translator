@@ -11,12 +11,13 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
-
+from django.core.signals import request_finished
 
 from .models import Track, Singer, Translation, User, Comment
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
-from .service import PaginationSingers, PaginationTracks, PaginationTranslation
+from .service import PaginationSingers, PaginationTracks, PaginationTranslation, PaginationComments
 from .permisisions import IsOwnerOrReadOnly
+from .feature_flag import get_auto_translate_flag, ldclient_close
 
 
 class TrackList(generics.ListCreateAPIView):
@@ -35,13 +36,19 @@ class TrackDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CommentList(generics.ListCreateAPIView):
+    pagination_class = PaginationComments
+    permissions_class = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    filter_backends = (SearchFilter, OrderingFilter)
+    search_fields = ('message', 'mark')
 
     def list(self, request, pk):
         queryset = Comment.objects.filter(track_id=pk)
-        serializer = CommentSerializer(queryset, many=True)
-        return Response(serializer.data)
+        res = self.filter_queryset(queryset)
+        serializer = CommentSerializer(res, many=True)
+        page = self.paginate_queryset(serializer.data)
+        return self.get_paginated_response(page)
 
 
 class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -68,14 +75,15 @@ class TranslationList(APIView):
 
     def post(self, request, pk):
         translation_data = JSONParser().parse(request)
-        if translation_data["auto_translate"]:
-            translator = google_translator()
-            track = Track.objects.get(id=pk)
-            track_serializer = TrackSerializer(track)
-            translation_data["text"] = translator.translate(track_serializer.data['text'],
-                                                            lang_tgt=translation_data["language"],
-                                                            lang_src=track_serializer.data[
-                                                                'original_language'])
+        if get_auto_translate_flag():
+            if translation_data["auto_translate"]:
+                translator = google_translator()
+                track = Track.objects.get(id=pk)
+                track_serializer = TrackSerializer(track)
+                translation_data["text"] = translator.translate(track_serializer.data['text'],
+                                                                lang_tgt=translation_data["language"],
+                                                                lang_src=track_serializer.data[
+                                                                    'original_language'])
         serializer = TranslateSerializer(data=translation_data)
         if serializer.is_valid():
             serializer.save()
