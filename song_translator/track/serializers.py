@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
 class SingerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Singer
-        fields = ('name', 'id')
+        fields = ('name', 'id', 'avatar')
 
 
 class ChoicesField(serializers.Field):
@@ -40,7 +40,7 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ('id', 'track_name', 'text', 'original_language', 'singer')
+        fields = ('id', 'track_name', 'text', 'original_language', 'singer', 'file')
 
 
 class TranslateSerializer(serializers.ModelSerializer):

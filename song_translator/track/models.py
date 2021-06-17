@@ -50,6 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Singer(models.Model):
     name = models.CharField(max_length=255)
+    avatar = models.ImageField(upload_to='avatars', max_length=100, blank=True)
 
     def __str__(self):
         return self.name
@@ -61,6 +62,7 @@ class Track(models.Model):
     original_language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
     singer = models.ManyToManyField(Singer)
     owner = models.ForeignKey('track.User', related_name='tracks', on_delete=models.CASCADE, default=1)
+    file = models.FileField(upload_to='tracks', max_length=100, blank=True)
 
     def __str__(self):
         return self.track_name

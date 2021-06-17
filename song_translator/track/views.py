@@ -11,13 +11,13 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.core.signals import request_finished
+from rest_framework import viewsets
 
 from .models import Track, Singer, Translation, User, Comment
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
 from .service import PaginationSingers, PaginationTracks, PaginationTranslation, PaginationComments
 from .permisisions import IsOwnerOrReadOnly
-from .feature_flag import get_auto_translate_flag, ldclient_close
+from .feature_flag import get_auto_translate_flag
 
 
 class TrackList(generics.ListCreateAPIView):
@@ -55,6 +55,39 @@ class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+
+# class TranslationList(viewsets.ModelViewSet):
+#     pagination_class = PaginationTranslation
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+#     queryset = Translation.objects.all()
+#     serializer_class = TranslateSerializer
+#     filter_backends = (SearchFilter, OrderingFilter)
+#     search_fields = ('language',)
+#     ordering_fields = ('language',)
+#
+#     def list(self, request, pk):
+#         queryset = Translation.objects.filter(track_id=pk)
+#         res = self.filter_queryset(queryset)
+#         serializer = TranslateSerializer(res, many=True)
+#         page = self.paginate_queryset(serializer.data)
+#         return self.get_paginated_response(page)
+#
+#     def create(self, request, pk):
+#         translation_data = JSONParser().parse(request)
+#         if get_auto_translate_flag():
+#             if translation_data["auto_translate"]:
+#                 translator = google_translator()
+#                 track = Track.objects.get(id=pk)
+#                 track_serializer = TrackSerializer(track)
+#                 translation_data["text"] = translator.translate(track_serializer.data['text'],
+#                                                                 lang_tgt=translation_data["language"],
+#                                                                 lang_src=track_serializer.data[
+#                                                                     'original_language'])
+#         serializer = TranslateSerializer(data=translation_data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TranslationList(APIView):
     pagination_class = PaginationTranslation
@@ -135,6 +168,10 @@ class SingerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Singer.objects.all()
     serializer_class = SingerSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+def audio_to_text(audio_file):
+
 
 
 @csrf_exempt
