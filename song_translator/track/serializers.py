@@ -5,6 +5,13 @@ from .models import Singer, Track, User, Translation, Comment
 from .utils import LANG_CHOICES
 
 
+def get_user_from_request(requests):
+    user = None
+    if requests and hasattr(requests, "user"):
+        user = requests.user
+    return user
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -15,7 +22,12 @@ class UserSerializer(serializers.ModelSerializer):
 class SingerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Singer
-        fields = ('name', 'id', 'avatar')
+        fields = ('name', 'id', "owner")
+
+    def create(self, validated_data):
+        user = get_user_from_request(self.context.get("request"))
+        validated_data['owner'] = user
+        return super().create(validated_data)
 
 
 class ChoicesField(serializers.Field):
@@ -40,7 +52,12 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ('id', 'track_name', 'text', 'original_language', 'singer', 'file')
+        fields = ('id', 'track_name', 'text', 'original_language', 'singer', "owner")
+
+    def create(self, validated_data):
+        user = get_user_from_request(self.context.get("request"))
+        validated_data['owner'] = user
+        return super().create(validated_data)
 
 
 class TranslateSerializer(serializers.ModelSerializer):
@@ -50,8 +67,18 @@ class TranslateSerializer(serializers.ModelSerializer):
         model = Translation
         fields = ('id', 'track_id', 'text', 'language')
 
+    def create(self, validated_data):
+        user = get_user_from_request(self.context.get("request"))
+        validated_data['owner'] = user
+        return super().create(validated_data)
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'track_id', 'message', 'mark')
+
+    def create(self, validated_data):
+        user = get_user_from_request(self.context.get("request"))
+        validated_data['owner'] = user
+        return super().create(validated_data)

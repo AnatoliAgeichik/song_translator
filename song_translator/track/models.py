@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 from .utils import LANG_CHOICES
@@ -51,6 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Singer(models.Model):
     name = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to='avatars', max_length=100, blank=True)
+    owner = models.ForeignKey('track.User', related_name='singer_user', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.name
@@ -62,7 +62,7 @@ class Track(models.Model):
     original_language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
     singer = models.ManyToManyField(Singer)
     owner = models.ForeignKey('track.User', related_name='tracks', on_delete=models.CASCADE, default=1)
-    file = models.FileField(upload_to='tracks', max_length=100, blank=True)
+    file = models.FileField(upload_to='tracks', max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.track_name
@@ -73,6 +73,7 @@ class Translation(models.Model):
     text = models.TextField()
     language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
     auto_translate = models.BooleanField(default=True)
+    owner = models.ForeignKey('track.User', related_name='translation_user', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return f"{self.track_id}: {self.language}"
@@ -86,3 +87,5 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.track_id}: {self.message[:10]}"
+
+
