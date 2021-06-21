@@ -89,3 +89,13 @@ class Comment(models.Model):
         return f"{self.track_id}: {self.message[:10]}"
 
 
+class AuditTable(models.Model):
+    create_time = models.DateTimeField(auto_now=True)
+    table_name = models.CharField(max_length=100)
+    field_name = models.CharField(max_length=100)
+    old_value = models.TextField(max_length=100, blank=True, null=True)
+    new_value = models.TextField(max_length=100)
+    author = models.ForeignKey('track.User', related_name='audit_owner', null=True, on_delete=models.SET_NULL, default=1)
+
+    def __str__(self):
+        return f"{self.create_time}{self.field_name}"
