@@ -73,7 +73,7 @@ class Translation(models.Model):
     text = models.TextField()
     language = models.CharField(max_length=2, choices=LANG_CHOICES, default="en")
     auto_translate = models.BooleanField(default=True)
-    owner = models.ForeignKey('track.User', related_name='translation_user', on_delete=models.CASCADE, default=1)
+    owner = models.ForeignKey('track.User', related_name='translation_user', null=True, on_delete=models.SET_NULL, default=1)
 
     def __str__(self):
         return f"{self.track_id}: {self.language}"
@@ -94,7 +94,7 @@ class AuditTable(models.Model):
     table_name = models.CharField(max_length=100)
     field_name = models.CharField(max_length=100)
     old_value = models.TextField(max_length=100, blank=True, null=True)
-    new_value = models.TextField(max_length=100)
+    new_value = models.TextField(max_length=100, blank=True, null=True)
     author = models.ForeignKey('track.User', related_name='audit_owner', null=True, on_delete=models.SET_NULL, default=1)
 
     def __str__(self):

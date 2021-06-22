@@ -68,7 +68,6 @@ class TranslationList(APIView):
         return queryset
 
     def get(self, request, pk):
-        print(request.user)
         translations = Translation.objects.filter(track_id=pk)
         paginator = PaginationTranslation()
         return paginator.generate_response(self.filter_queryset(translations), TranslateSerializer, request)

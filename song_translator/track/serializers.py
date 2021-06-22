@@ -52,7 +52,7 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ('id', 'track_name', 'text', 'original_language', 'singer', "owner")
+        fields = ('id', 'track_name', 'text', 'original_language', 'singer', 'owner')
 
     def create(self, validated_data):
         user = get_user_from_request(self.context.get("request"))
@@ -65,7 +65,7 @@ class TranslateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Translation
-        fields = ('id', 'track_id', 'text', 'language')
+        fields = ('id', 'track_id', 'text', 'language', 'owner')
 
     def create(self, validated_data):
         user = get_user_from_request(self.context.get("request"))
@@ -76,7 +76,7 @@ class TranslateSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('id', 'track_id', 'message', 'mark')
+        fields = ('id', 'track_id', 'message', 'mark', 'owner')
 
     def create(self, validated_data):
         user = get_user_from_request(self.context.get("request"))

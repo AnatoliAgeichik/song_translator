@@ -41,6 +41,8 @@ def add_to_audit(table_name, field_name, old_value, new_value, owner):
 def handle_for_audit(fields, sender, instance):
     if instance.id:
         obj = sender.objects.get(id=instance.id)
+        if obj == instance.id:
+            print("delete")
         for field in fields:
             field_object = sender._meta.get_field(field)
             field_value_old = field_object.value_from_object(obj)
@@ -52,3 +54,10 @@ def handle_for_audit(fields, sender, instance):
             field_object = sender._meta.get_field(field)
             field_value_new = field_object.value_from_object(instance)
             add_to_audit(sender, field, None, field_value_new, instance.owner)
+
+
+def handle_for_audit_delete(fields, sender, instance):
+    for field in fields:
+        field_object = sender._meta.get_field(field)
+        field_value_old = field_object.value_from_object(instance)
+        add_to_audit(sender, field, field_value_old, None, instance.owner)
