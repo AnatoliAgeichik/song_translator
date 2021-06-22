@@ -92,6 +92,7 @@ class Comment(models.Model):
 class AuditTable(models.Model):
     create_time = models.DateTimeField(auto_now=True)
     table_name = models.CharField(max_length=100)
+    record_id = models.IntegerField(null=True, blank=True)
     field_name = models.CharField(max_length=100)
     old_value = models.TextField(max_length=100, blank=True, null=True)
     new_value = models.TextField(max_length=100, blank=True, null=True)
