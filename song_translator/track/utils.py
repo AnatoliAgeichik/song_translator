@@ -144,3 +144,8 @@ def get_random_lang_for_factory(new_value=True):
 
     return LocaleFaker[random.randint(0, len(LocaleFaker))][0]
 
+
+Singer_field = ["name", "owner"]
+Track_field = ["track_name", "text", "original_language", "singer", "owner"]
+Translation_field = ["track_id", "text", "language", "auto_translate", "owner"]
+Comment_field = ["track_id", "message", "mark", "owner"]

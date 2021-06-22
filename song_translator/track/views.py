@@ -11,13 +11,12 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.core.signals import request_finished
 
 from .models import Track, Singer, Translation, User, Comment
 from .serializers import SingerSerializer, TrackSerializer, TranslateSerializer, CommentSerializer
 from .service import PaginationSingers, PaginationTracks, PaginationTranslation, PaginationComments
 from .permisisions import IsOwnerOrReadOnly
-from .feature_flag import get_auto_translate_flag, ldclient_close
+from .feature_flag import get_auto_translate_flag
 
 
 class TrackList(generics.ListCreateAPIView):
