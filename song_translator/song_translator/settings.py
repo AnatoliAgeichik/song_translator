@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import os.path
+
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'factory_generator',
+    'storages',
 
     'track'
 ]
@@ -141,8 +145,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-MEDIA_URL = "/document/"
-MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "media_cdn")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -186,3 +188,11 @@ LOGGING = {
         }
     }
 }
+
+DEFAULT_FILE_STORAGE = os.getenv("DEFAULT_FILE_STORAGE")
+GS_ACCESS_KEY_ID = os.getenv("GS_ACCESS_KEY_ID")
+GS_SECRET_ACCESS_KEY = os.getenv("GS_SECRET_ACCESS_KEY")
+GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+STATICFILES_STORAGE = os.getenv("STATICFILES_STORAGE")
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(BASE_DIR, '../config/translator-313010-a4c5cb76f35d.json')

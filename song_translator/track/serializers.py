@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 class SingerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Singer
-        fields = ('name', 'id', "owner")
+        fields = ('name', 'id', "owner", "avatar")
 
     def create(self, validated_data):
         user = get_user_from_request(self.context.get("request"))
@@ -52,7 +52,7 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ('id', 'track_name', 'text', 'original_language', 'singer', 'owner')
+        fields = ('id', 'track_name', 'text', 'original_language', 'singer', 'owner', 'file')
 
     def create(self, validated_data):
         user = get_user_from_request(self.context.get("request"))
