@@ -189,10 +189,10 @@ LOGGING = {
     }
 }
 
-DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+DEFAULT_FILE_STORAGE = os.getenv("DEFAULT_FILE_STORAGE")
 GS_ACCESS_KEY_ID = os.getenv("GS_ACCESS_KEY_ID")
 GS_SECRET_ACCESS_KEY = os.getenv("GS_SECRET_ACCESS_KEY")
-GS_BUCKET_NAME = 'song_translator'
-STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+STATICFILES_STORAGE = os.getenv("STATICFILES_STORAGE")
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(BASE_DIR, '../config/translator-313010-a4c5cb76f35d.json')
